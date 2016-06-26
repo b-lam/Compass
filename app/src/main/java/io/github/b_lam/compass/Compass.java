@@ -1,7 +1,9 @@
 package io.github.b_lam.compass;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -32,13 +34,15 @@ public class Compass extends AppCompatActivity {
     SensorEventListener eListener;
     Sensor accelerometer, magFieldSensor;
     AlertDialog dialogBuilder;
+    TextView tvMag;
+    LinearLayout l;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_compass);
 
-        LinearLayout l = (LinearLayout) findViewById(R.id.Layout);
+        l = (LinearLayout) findViewById(R.id.Layout);
         l.setOrientation(LinearLayout.VERTICAL);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
 
@@ -51,12 +55,21 @@ public class Compass extends AppCompatActivity {
         tvDegree.setTextSize(35);
         tvDegree.setGravity(Gravity.CENTER_HORIZONTAL);
         tvDegree.setTextColor(Color.WHITE);
-        tvDegree.setPaddingRelative(0,150,0,0);
+        tvDegree.setPaddingRelative(0,100,0,0);
 
         //Add views to layout
         l.addView(imgCompass);
         l.addView(tvDegree);
 
+        tvMag = new TextView(getApplicationContext());
+        tvMag.setGravity(Gravity.CENTER_HORIZONTAL);
+        tvMag.setTextColor(Color.WHITE);
+        tvMag.setTextSize(18);
+
+        SharedPreferences sharedPreferences = getSharedPreferences("enable", Context.MODE_PRIVATE);
+        if(sharedPreferences.getBoolean("magField", false)){
+            l.addView(tvMag);
+        }
 
         //Creating senor manager
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -67,7 +80,7 @@ public class Compass extends AppCompatActivity {
 
         //Creating sensor event listener
         //Register sensors with event listener
-        eListener = new MySensorEventListener(sensorManager, imgCompass, tvDegree);
+        eListener = new MySensorEventListener(sensorManager, imgCompass, tvDegree, tvMag);
         sensorManager.registerListener(eListener, accelerometer, SensorManager.SENSOR_DELAY_GAME);
         sensorManager.registerListener(eListener, magFieldSensor, SensorManager.SENSOR_DELAY_GAME);
 
@@ -84,6 +97,13 @@ public class Compass extends AppCompatActivity {
         super.onResume();
         sensorManager.registerListener(eListener, accelerometer, SensorManager.SENSOR_DELAY_GAME);
         sensorManager.registerListener(eListener, magFieldSensor, SensorManager.SENSOR_DELAY_GAME);
+
+        SharedPreferences sharedPreferences = getSharedPreferences("enable", Context.MODE_PRIVATE);
+        if(sharedPreferences.getBoolean("magField", false) && tvMag.getParent() == null) {
+            l.addView(tvMag);
+        }else if(!sharedPreferences.getBoolean("magField", false) && tvMag.getParent() != null){
+            l.removeView(tvMag);
+        }
     }
 
     @Override

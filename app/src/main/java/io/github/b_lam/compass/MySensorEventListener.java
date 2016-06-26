@@ -27,13 +27,14 @@ public class MySensorEventListener implements SensorEventListener{
     float currentDegree = 0f, degree = 0f;
     float[] R = new float[9]; float[] I = new float[9];
     ImageView imgCompass;
-    TextView tvDegree;
+    TextView tvDegree, tvMag;
     String heading;
 
-    public MySensorEventListener(SensorManager sensorManager, ImageView imgCompass, TextView tvDegree) {
+    public MySensorEventListener(SensorManager sensorManager, ImageView imgCompass, TextView tvDegree, TextView tvMag) {
         this.sensorManager = sensorManager;
         this.imgCompass = imgCompass;
         this.tvDegree = tvDegree;
+        this.tvMag = tvMag;
     }
 
     public void onAccuracyChanged(Sensor s, int i) {}
@@ -46,11 +47,17 @@ public class MySensorEventListener implements SensorEventListener{
             gravity[2] = Constant.ALPHA * gravity[2] + (1 - Constant.ALPHA) * event.values[2];
 
         }
-        if(event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+        if(event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD){
 
             geomagnetic[0] = Constant.ALPHA * geomagnetic[0] + (1 - Constant.ALPHA) * event.values[0];
             geomagnetic[1] = Constant.ALPHA * geomagnetic[1] + (1 - Constant.ALPHA) * event.values[1];
             geomagnetic[2] = Constant.ALPHA * geomagnetic[2] + (1 - Constant.ALPHA) * event.values[2];
+
+            if (Math.abs(geomagnetic[2]) > Math.abs(geomagnetic[1])){
+                tvMag.setText(Math.round(Math.abs(geomagnetic[2])) + " μT");
+            }else{
+                tvMag.setText(Math.round(Math.abs(geomagnetic[1])) + " μT");
+            }
 
         }
 
